@@ -21,10 +21,11 @@
 title: Nik Myers | CS-499 Capstone
 email: nikolas.myers@snhu.edu
 description: >- # this means to ignore newlines until "baseurl:"
-  ePortfolio site for Nik Myers' CS-499 Capstone project at Southern New Hampshire University.
+  ePortfolio site for Nik Myers' CS-499 Capstone project at
+  Southern New Hampshire University.
 domain: elecblue.github.io
-baseurl: "/pages" # the subpath of your site, e.g. /blog
 url: "https://elecblue.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+baseurl: "/pages" # the subpath of your site, e.g. /blog
 github_username: elecblue
 
 # Build settings
