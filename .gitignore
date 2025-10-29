@@ -1,3 +1,7 @@
+# Cleanup for main branch
+.DS_Store
+docs
+pages
 
 # moon
 .moon/cache
