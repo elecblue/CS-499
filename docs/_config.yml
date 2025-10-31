@@ -18,15 +18,15 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: Nik Myers | CS-499 Capstone
+title: Nik Myers &mdash; CS-499 Capstone
 email: nikolas.myers@snhu.edu
 description: >- # this means to ignore newlines until "baseurl:"
-  ePortfolio site for Nik Myers' CS-499 Capstone project at
-  Southern New Hampshire University.
+  ePortfolio for Nik Myers' CS-499 Capstone project at SNHU.
 baseurl: "/" # the subpath of your site, e.g. /blog
 domain: elecblue.github.io
 url: "https://elecblue.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 github_username: elecblue
+show_downloads: true
 
 # Build settings
 #theme: minima
