@@ -1,9 +1,11 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import * as Table from "$lib/components/ui/table/index"
     
     let animals: any[] | null | undefined = [];
     let total = 0, page = 1, size = 10;
     let species = "", outcome = "", location = "";
+    let columnWidth = "40px";
 
     async function load() {
         const params = new URLSearchParams({ page: String(page), size: String(size) });
@@ -34,31 +36,31 @@
 </div>
 
 <!-- Results Table -->
-<p>{total} results</p>
-<table border="1" cellpadding="5" cellspacing="0" style="table-layout: auto; border-collapse:collapse; width:100%;">
-    <thead>
-        <tr>
-            <th>Record Number</th>
-            <th>Animal ID</th>
-            <th>Name</th>
-            <th>Species</th>
-            <th>Outcome</th>
-            <th>Location</th>
-        </tr>
-    </thead>
-    <tbody>
+<Table.Root width="100%">
+    <Table.Header>
+        <Table.Row style="text-align: left;">
+            <Table.Head style="max-width: {columnWidth};">Record #</Table.Head>
+            <Table.Head>Animal ID</Table.Head>
+            <Table.Head>Name</Table.Head>
+            <Table.Head>Species</Table.Head>
+            <Table.Head>Outcome</Table.Head>
+            <Table.Head>Location</Table.Head>
+        </Table.Row>
+    </Table.Header>
+    <Table.Body>
         {#each animals as a}
-        <tr>
-            <td>{a.recNum}</td>
-            <td>{a.animalId}</td>
-            <td>{a.name ?? "(Not Specified)"}</td>
-            <td>{a.animalType}</td>
-            <td>{a.outcomeType ?? "(Not Specified)"}</td>
-            <td>{a.locationLat ?? "(Not Specified)"}</td>
-        </tr>
+        <Table.Row>
+            <Table.Cell style="max-width: {columnWidth};">{a.recNum}</Table.Cell>
+            <Table.Cell>{a.animalId}</Table.Cell>
+            <Table.Cell>{a.name ?? "(Not Specified)"}</Table.Cell>
+            <Table.Cell>{a.animalType}</Table.Cell>
+            <Table.Cell>{a.outcomeType ?? "(Not Specified)"}</Table.Cell>
+            <Table.Cell>{a.locationLat ?? "(Not Specified)"}</Table.Cell>
+        </Table.Row>
         {/each}
-    </tbody>
-</table>
+    </Table.Body>
+    <Table.Caption>{total} results</Table.Caption>
+</Table.Root>
 
 <!-- Pagination Controls -->
 <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
@@ -66,3 +68,9 @@
     <span>Page {page}</span>
     <button on:click={next} disabled={page*size>=total}>Next</button>
 </div>
+
+<style>
+    .narrow-column {
+        max-width: 100px;
+    }
+</style>
