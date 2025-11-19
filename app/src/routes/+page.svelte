@@ -1,12 +1,25 @@
 <script lang="ts">
+    // Svelte/SvelteKit imports
     import { onMount } from "svelte";
-    import * as Table from "$lib/components/ui/table/index"
-    
-    let animals: any[] | null | undefined = [];
-    let total = 0, page = 1, size = 10;
-    let species = "", outcome = "", location = "";
-    let columnWidth = "40px";
+    import { on } from 'svelte/events';
 
+    // Icon imports
+    import { ArrowLeft, ArrowRight, FileSpreadsheet, Search } from "@lucide/svelte";
+
+    // Component imports
+    import DataSearchFilters from '$lib/components/custom/DataSearchFilters.svelte';
+    import DataTable from '$lib/components/custom/DataTable.svelte';
+    
+    // State variables
+    let animals: any[] | null | undefined = $state([]);
+    let total = $state(0);
+    let page = $state(1);
+    let size = $state(10);
+    let species = $state("");
+    let outcome = $state("");
+    let location = $state("");
+
+    // Function to load animal data from the API
     async function load() {
         const params = new URLSearchParams({ page: String(page), size: String(size) });
         if (species) params.set("species", species);
@@ -17,8 +30,7 @@
         animals = data.items; total = data.total;
     }
 
-    function next(){ if (page * size < total) { page++; load(); } }
-    function prev(){ if (page > 1) { page--; load(); } }
+    // Initial data load on component mount
     onMount(load);
 </script>
 
@@ -28,49 +40,13 @@
 <h1>Grazioso Salvare | Rescue-Mate</h1>
 
 <!-- Search Filters -->
-<div style="display:flex; gap:0.5rem; align-items:end;">
-    <div><label>Species<br/><input bind:value={species} placeholder="Species (Dog/Cat)"/></label></div>
-    <div><label>Outcome<br/><input bind:value={outcome} placeholder="Adopted"/></label></div>
-    <div><label>Location<br/><input bind:value={location} placeholder="Austin"/></label></div>
-    <button on:click={load}>Search</button>
-</div>
+<DataSearchFilters bind:animals={animals} total={total} page={page} size={size} species={species} outcome={outcome} location={location} />
 
 <!-- Results Table -->
-<Table.Root width="100%">
-    <Table.Header>
-        <Table.Row style="text-align: left;">
-            <Table.Head style="max-width: {columnWidth};">Record #</Table.Head>
-            <Table.Head>Animal ID</Table.Head>
-            <Table.Head>Name</Table.Head>
-            <Table.Head>Species</Table.Head>
-            <Table.Head>Outcome</Table.Head>
-            <Table.Head>Location</Table.Head>
-        </Table.Row>
-    </Table.Header>
-    <Table.Body>
-        {#each animals as a}
-        <Table.Row>
-            <Table.Cell style="max-width: {columnWidth};">{a.recNum}</Table.Cell>
-            <Table.Cell>{a.animalId}</Table.Cell>
-            <Table.Cell>{a.name ?? "(Not Specified)"}</Table.Cell>
-            <Table.Cell>{a.animalType}</Table.Cell>
-            <Table.Cell>{a.outcomeType ?? "(Not Specified)"}</Table.Cell>
-            <Table.Cell>{a.locationLat ?? "(Not Specified)"}</Table.Cell>
-        </Table.Row>
-        {/each}
-    </Table.Body>
-    <Table.Caption>{total} results</Table.Caption>
-</Table.Root>
-
-<!-- Pagination Controls -->
-<div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-    <button on:click={prev} disabled={page===1}>Prev</button>
-    <span>Page {page}</span>
-    <button on:click={next} disabled={page*size>=total}>Next</button>
-</div>
+<DataTable animals={animals} total={total} page={page} size={size} species={species} outcome={outcome} location={location} />
 
 <style>
-    .narrow-column {
-        max-width: 100px;
+    :root {
+        padding: 1rem;
     }
 </style>
