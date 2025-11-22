@@ -1,50 +1,42 @@
 <script lang="ts" generics="TData, TValue">
-    import { writable } from "svelte/store";
-
     import { 
-        type ColumnDef, 
+        type CoreOptions,
+        type ColumnDef,
+        type TableOptions,
         type PaginationState, 
         getCoreRowModel, 
-        getPaginationRowModel 
+        getPaginationRowModel, 
+        type ColumnHelper
     } from "@tanstack/table-core";
     //import { createSvelteTable } from "@tanstack/svelte-table";
 
     import { ChevronLeftIcon, ChevronRightIcon } from "@lucide/svelte";
 
-    import { createSvelteTable, FlexRender } from "$lib/components/ui/data-table";
+    import { createSvelteTable as cST, FlexRender } from "$lib/components/ui/data-table";
     import * as Table from "$lib/components/ui/table/index";
     import * as Pagination from "$lib/components/ui/pagination/index";
 
     import { filterState } from '$lib/filters.svelte';
 
     type DataTableProps<TData, TValue> = {
-        columns: ColumnDef<TData, TValue>[];
+        columns: ColumnDef<any, any>[];
         data: TData[];
     };
 
     let { data, columns }: DataTableProps<TData, TValue> = $props();
-    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 10 });
+    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 15 });
 
-    const tableOptions = writable({
-        columns,
+    const table = cST({
+        // get data() {
+        //     return data;
+        // },
         data,
-        initialState: { 
-            sorting: [
-                { id: 'recNum', desc: false }
-            ]
-        },
-    });
-
-    const table = createSvelteTable({
-        get data() {
-            return data;
-        },
         columns,
-        state: {
+        initialState: {
             get pagination() {
                 return pagination;
             },
-            // pagination,
+            //pagination,
         },
         onPaginationChange: (updater) => {
             if (typeof updater === "function") {
@@ -57,9 +49,7 @@
         getPaginationRowModel: getPaginationRowModel(),
     });
 
-    //let { animals, total, page, size, species, outcome, location, ...restProps } = $props();
     let { species, outcome, location, page, size, total } = filterState;
-    //let columnWidth = "40px";
 
     const range = (start: number, stop: number, step: number = 1) => 
         Array.from({ length: Math.ceil((stop - start) / step) },
@@ -89,6 +79,16 @@
 
     // Initial data load on component mount
     // onMount(load);
+
+    let reactiveIndex = $state(0);
+
+    function logTableState() {
+        let tableLength = data.length
+        console.log("DataTable mounted with data:", tableLength);
+        console.log("Can go to next page? ", table.getCanNextPage());
+        console.log($state.snapshot(pagination));
+        console.log(data);
+    };
 </script>
 
 <!--
@@ -137,9 +137,22 @@ sorting and filtering capabilities.*
     </Table.Root>
 </div>
 
-<!-- <Pagination.Root count={ table.getRowCount() } perPage = { pagination.pageSize }> -->
-<Pagination.Root bind:page={ pagination.pageIndex }>
-    <!-- {#snippet children({ pages, currentPage = table.getState().pagination.pageIndex + 1 })} -->
+<div class="inset-x-0 header">
+    <div class="flex h-14 items-center justify-between gap-8 px-4 sm:px-6">
+        <div class="flex items-center gap-4">
+            <button onclick={ () => { logTableState(); table.nextPage(); } }>Get State</button>
+        </div>
+        <div class="flex items-center gap-6 max-md:hidden">
+            <span>Page size: {table.getState().pagination.pageSize}</span>
+        </div>
+        <div class="flex items-center gap-6 max-md:hidden">
+            <span>Page index: { table.getState().pagination.pageIndex }</span>
+        </div>
+    </div>
+</div>
+
+<Pagination.Root count={ table.getRowCount() } perPage = { table.getState().pagination.pageSize }>
+    {#snippet children({ pages, currentPage = table.getState().pagination.pageIndex + 1 })}
     <Pagination.Content>
         <Pagination.Item>
             <Pagination.PrevButton 
@@ -149,19 +162,19 @@ sorting and filtering capabilities.*
                 <ChevronLeftIcon class="size-4" />
             </Pagination.PrevButton>
         </Pagination.Item>
-        <!-- {#each pages as page (page.key)}
+        {#each pages as page (page.key)}
             {#if page.type === 'ellipsis'}
                 <Pagination.Item>
                     <Pagination.Ellipsis />
                 </Pagination.Item>
             {:else}
                 <Pagination.Item>
-                    <Pagination.Link {page} isActive={ currentPage === page.value } class="cursor-pointer" >
-                        {page.value}
+                    <Pagination.Link { page } onclick={ () => table.setPageIndex(page.value - 1) } isActive={ currentPage === page.value } class="cursor-pointer" >
+                        { page.value }
                     </Pagination.Link>
                 </Pagination.Item>
             {/if}
-        {/each} -->
+        {/each}
         <Pagination.Item>
             <Pagination.NextButton 
                 onclick={ () => table.nextPage() } 
@@ -171,7 +184,7 @@ sorting and filtering capabilities.*
             </Pagination.NextButton>
         </Pagination.Item>
     </Pagination.Content>
-    <!-- {/snippet} -->
+    {/snippet}
 </Pagination.Root>
 
 <!-- Data Table Displaying Animal Records -->

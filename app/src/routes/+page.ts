@@ -29,15 +29,14 @@ const filterParams = () => {
     return params;
 };
 
-export const load: PageLoad = async ({ fetch }) => {
+export const load: PageLoad = async ({ fetch, url }) => {
+    // const params = 0;
     const params = filterParams();
     const res = await fetch(`/api/animals?` + params.toString());
     const data = await res.json();
     const animals = data.items;
 
-    filterState.total = animals.total;
+    filterState.total = data.total;
 
-    return {
-        animals,
-    };
+    return { animals };
 };

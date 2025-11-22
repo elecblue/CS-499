@@ -3,6 +3,6 @@ export const filterState = $state({
 	outcome: "",
 	location: "",
 	page: 1,
-	size: 10,
+	size: 1000,
 	total: 0
 });

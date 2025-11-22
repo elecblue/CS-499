@@ -1,7 +1,7 @@
-<script lang="ts">
+<script lang="ts" generics="TData, TValue">
     // Svelte/SvelteKit imports
     import { onMount } from "svelte";
-    import { animalColumns } from "$lib/models"; 
+    import { animalColumn, animalColumns } from "$lib/models"; 
 
     // Icon imports
     
@@ -52,8 +52,8 @@
 <Header />
 
 <!-- Search Filters -->
-<DataSearchFilters animals={data.animals} total={filterState.total} page={filterState.page} size={filterState.size} species={filterState.species} outcome={filterState.outcome} location={filterState.location} />
+<DataSearchFilters animals={data} total={filterState.total} page={filterState.page} size={filterState.size} species={filterState.species} outcome={filterState.outcome} location={filterState.location} />
 
 <!-- Results Table -->
 <!-- <DataTable animals={animals} total={filterState.total} page={filterState.page} size={filterState.size} species={filterState.species} outcome={filterState.outcome} location={filterState.location} /> -->
-<DataTable data={data.animals} columns={animalColumns} />
+<DataTable data={ data.animals } columns={ animalColumns } />
