@@ -6,13 +6,18 @@
         type PaginationState, 
         getCoreRowModel, 
         getPaginationRowModel, 
-        type ColumnHelper
+        type ColumnHelper,
+
+        type RowSelectionState
+
     } from "@tanstack/table-core";
     //import { createSvelteTable } from "@tanstack/svelte-table";
 
     import { ChevronLeftIcon, ChevronRightIcon } from "@lucide/svelte";
 
     import { createSvelteTable as cST, FlexRender } from "$lib/components/ui/data-table";
+    import { ScrollArea } from "$lib/components/ui/scroll-area/index";
+    import * as Card from "$lib/components/ui/card/index";
     import * as Table from "$lib/components/ui/table/index";
     import * as Pagination from "$lib/components/ui/pagination/index";
 
@@ -24,19 +29,21 @@
     };
 
     let { data, columns }: DataTableProps<TData, TValue> = $props();
-    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 15 });
+    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 20 });
+    let rowSelection = $state<RowSelectionState>({});
 
     const table = cST({
-        // get data() {
-        //     return data;
-        // },
-        data,
+        get data() {
+            return data;
+        },
         columns,
-        initialState: {
+        state: {
             get pagination() {
                 return pagination;
             },
-            //pagination,
+            get rowSelection() {
+                return rowSelection;
+            },
         },
         onPaginationChange: (updater) => {
             if (typeof updater === "function") {
@@ -45,8 +52,17 @@
                 pagination = updater;
             }
         },
+        onRowSelectionChange: (updater) => {
+            if (typeof updater === "function") {
+                rowSelection = updater(rowSelection);
+            } else {
+                rowSelection = updater;
+            }
+        },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        enableRowPinning: true,
+        enableRowSelection: true,
     });
 
     let { species, outcome, location, page, size, total } = filterState;
@@ -55,32 +71,6 @@
         Array.from({ length: Math.ceil((stop - start) / step) },
             (_, i) => start + i * step
         );
-
-    // Function to load animal data from the API
-    // async function load() {
-    //     const params = new URLSearchParams({ page: String(page), size: String(size) });
-    //     if (species) params.set("species", species);
-    //     if (outcome) params.set("outcome", outcome);
-    //     if (location) params.set("location", location);
-    //     const res = await fetch(`/api/animals?` + params.toString());
-    //     const data = await res.json();
-    //     animals = data.items; total = data.total;
-    // }
-
-    // // Pagination functions
-    // function getPage() {
-    //     return page;
-    // }
-
-    // function setPage(p: number) {
-    //     page = p;
-    //     load();
-    // }
-
-    // Initial data load on component mount
-    // onMount(load);
-
-    let reactiveIndex = $state(0);
 
     function logTableState() {
         let tableLength = data.length
@@ -104,43 +94,94 @@ sorting and filtering capabilities.*
 -->
 
 <!-- Data Table Powered by TanStack Table -->
-<div class="rounded-md border">
-    <Table.Root>
-        <Table.Header>
-            {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-            <Table.Row>
-                {#each headerGroup.headers as header (header.id)}
-                <Table.Head colspan={header.colSpan}>
-                    {#if !header.isPlaceholder}
-                    <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+ <Card.Root class="max-w-full m-4 bg-card">
+    <Card.Header>
+        <Card.Title>Rescue Animal Data</Card.Title>
+        <Card.Description>Browse database of { table.getRowCount() } animals.</Card.Description>
+    </Card.Header>
+    <Card.Content>
+        <ScrollArea orientation="both" class="w-full max-w-full h-100 rounded-md border">
+            <div class="box-border rounded-md">
+                <Table.Root>
+                    <Table.Header>
+                        {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+                        <Table.Row>
+                            {#each headerGroup.headers as header (header.id)}
+                            <Table.Head colspan={header.colSpan} class="p-3">
+                                {#if !header.isPlaceholder}
+                                    {#if header.column.getIsFirstColumn()}
+                                    <div class="pr-4">
+                                        <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                                    </div>
+                                    {:else}
+                                    <FlexRender content={header.column.columnDef.header} context={header.getContext()} />
+                                    {/if}
+                                {/if}
+                            </Table.Head>
+                            {/each}
+                        </Table.Row>
+                        {/each}
+                    </Table.Header>
+                    <Table.Body>
+                        {#each table.getRowModel().rows as row (row.id)}
+                        <Table.Row data-state={row.getIsSelected() && "selected"}>
+                            {#each row.getVisibleCells() as cell (cell.id)}
+                            <Table.Cell class="p-3">
+                                <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+                            </Table.Cell>
+                            {/each}
+                        </Table.Row>
+                        {:else}
+                        <Table.Row>
+                            <Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+                        </Table.Row>
+                        {/each}
+                    </Table.Body>
+                </Table.Root>
+            </div>
+        </ScrollArea>
+        <Pagination.Root count={ table.getRowCount() } perPage = { table.getState().pagination.pageSize } class="mt-4">
+            {#snippet children({ pages, currentPage = table.getState().pagination.pageIndex + 1 })}
+            <Pagination.Content>
+                <Pagination.Item>
+                    <Pagination.PrevButton 
+                        onclick={ () => table.previousPage() } 
+                        disabled={ !table.getCanPreviousPage() }
+                        class="cursor-pointer">
+                        <ChevronLeftIcon class="size-4" />
+                    </Pagination.PrevButton>
+                </Pagination.Item>
+                {#each pages as page (page.key)}
+                    {#if page.type === 'ellipsis'}
+                        <Pagination.Item>
+                            <Pagination.Ellipsis />
+                        </Pagination.Item>
+                    {:else}
+                        <Pagination.Item>
+                            <Pagination.Link { page } onclick={ () => table.setPageIndex(page.value - 1) } isActive={ currentPage === page.value } class="cursor-pointer" >
+                                { page.value }
+                            </Pagination.Link>
+                        </Pagination.Item>
                     {/if}
-                </Table.Head>
                 {/each}
-            </Table.Row>
-            {/each}
-        </Table.Header>
-        <Table.Body>
-            {#each table.getRowModel().rows as row (row.id)}
-            <Table.Row data-state={row.getIsSelected() && "selected"}>
-                {#each row.getVisibleCells() as cell (cell.id)}
-                <Table.Cell>
-                    <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
-                </Table.Cell>
-                {/each}
-            </Table.Row>
-            {:else}
-            <Table.Row>
-                <Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
-            </Table.Row>
-            {/each}
-        </Table.Body>
-    </Table.Root>
-</div>
+                <Pagination.Item>
+                    <Pagination.NextButton 
+                        onclick={ () => table.nextPage() } 
+                        disabled={ !table.getCanNextPage() }
+                        class="cursor-pointer">
+                        <ChevronRightIcon class="size-4" />
+                    </Pagination.NextButton>
+                </Pagination.Item>
+            </Pagination.Content>
+            {/snippet}
+        </Pagination.Root>
+    </Card.Content>
+</Card.Root>
 
-<div class="inset-x-0 header">
+<!-- <div class="inset-x-0 header">
     <div class="flex h-14 items-center justify-between gap-8 px-4 sm:px-6">
         <div class="flex items-center gap-4">
-            <button onclick={ () => { logTableState(); table.nextPage(); } }>Get State</button>
+            <button onclick={ () => { logTableState(); } } class="p-2 bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border">Get State</button>
         </div>
         <div class="flex items-center gap-6 max-md:hidden">
             <span>Page size: {table.getState().pagination.pageSize}</span>
@@ -149,105 +190,4 @@ sorting and filtering capabilities.*
             <span>Page index: { table.getState().pagination.pageIndex }</span>
         </div>
     </div>
-</div>
-
-<Pagination.Root count={ table.getRowCount() } perPage = { table.getState().pagination.pageSize }>
-    {#snippet children({ pages, currentPage = table.getState().pagination.pageIndex + 1 })}
-    <Pagination.Content>
-        <Pagination.Item>
-            <Pagination.PrevButton 
-                onclick={ () => table.previousPage() } 
-                disabled={ !table.getCanPreviousPage() }
-                class="cursor-pointer">
-                <ChevronLeftIcon class="size-4" />
-            </Pagination.PrevButton>
-        </Pagination.Item>
-        {#each pages as page (page.key)}
-            {#if page.type === 'ellipsis'}
-                <Pagination.Item>
-                    <Pagination.Ellipsis />
-                </Pagination.Item>
-            {:else}
-                <Pagination.Item>
-                    <Pagination.Link { page } onclick={ () => table.setPageIndex(page.value - 1) } isActive={ currentPage === page.value } class="cursor-pointer" >
-                        { page.value }
-                    </Pagination.Link>
-                </Pagination.Item>
-            {/if}
-        {/each}
-        <Pagination.Item>
-            <Pagination.NextButton 
-                onclick={ () => table.nextPage() } 
-                disabled={ !table.getCanNextPage() }
-                class="cursor-pointer">
-                <ChevronRightIcon class="size-4" />
-            </Pagination.NextButton>
-        </Pagination.Item>
-    </Pagination.Content>
-    {/snippet}
-</Pagination.Root>
-
-<!-- Data Table Displaying Animal Records -->
-<!-- <Table.Root width="100%">
-    <Table.Header>
-        <Table.Row style="text-align: left;">
-            <Table.Head style="max-width: {columnWidth};">Record #</Table.Head>
-            <Table.Head>Animal ID</Table.Head>
-            <Table.Head>Name</Table.Head>
-            <Table.Head>Species</Table.Head>
-            <Table.Head>Outcome</Table.Head>
-            <Table.Head>Location</Table.Head>
-        </Table.Row>
-    </Table.Header>
-    <Table.Body>
-        {#each animals as a}
-        <Table.Row>
-            <Table.Cell style="max-width: {columnWidth};">{a.recNum}</Table.Cell>
-            <Table.Cell>{a.animalId}</Table.Cell>
-            <Table.Cell>{a.name ?? "(Not Specified)"}</Table.Cell>
-            <Table.Cell>{a.animalType}</Table.Cell>
-            <Table.Cell>{a.outcomeType ?? "(Not Specified)"}</Table.Cell>
-            <Table.Cell>{a.locationLat ?? "(Not Specified)"}</Table.Cell>
-        </Table.Row>
-        {/each}
-    </Table.Body>
-    <Table.Caption>{total} results</Table.Caption>
-</Table.Root> -->
-
-<!-- Pagination controls -->
-<!-- <Pagination.Root count={ total } bind:page={ getPage, setPage } perPage={ size } >
-    {#snippet children({ pages, currentPage })}
-    <Pagination.Content>
-        <Pagination.Item>
-            <Pagination.PrevButton class="cursor-pointer">
-                <ChevronLeftIcon class="size-4" />
-            </Pagination.PrevButton>
-        </Pagination.Item>
-        {#each pages as page (page.key)}
-            {#if page.type === 'ellipsis'}
-                <Pagination.Item>
-                    <Pagination.Ellipsis />
-                </Pagination.Item>
-            {:else}
-                <Pagination.Item>
-                    <Pagination.Link {page} isActive={ currentPage === page.value } class="cursor-pointer" >
-                        {page.value}
-                    </Pagination.Link>
-                </Pagination.Item>
-            {/if}
-        {/each}
-        <Pagination.Item>
-            <Pagination.NextButton class="cursor-pointer">
-                <ChevronRightIcon class="size-4" />
-            </Pagination.NextButton>
-        </Pagination.Item>
-    </Pagination.Content>
-    {/snippet}
-</Pagination.Root> -->
-
-<!-- <style>
-    :root {
-        padding: 1rem;
-    }
-</style> -->
-
+</div> -->

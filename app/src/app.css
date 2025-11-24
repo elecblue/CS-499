@@ -36,6 +36,11 @@
   --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.795 0.184 86.047);
+  --shadow-primary: oklch(24.559% 0.05017 89.53);
+  --shadow-primary\/20: oklch(13.453% 0.02779 98.007 / 0.3);
+  --shadow-secondary: oklch(0.967 0.001 286.375);
+  --shadow-secondary\/20: oklch(47.067% 0.04426 89.024 / 0.9);
+  font-family: 'Helvetica Neue', Arial, sans-serif;
 }
 
 .dark {
@@ -181,11 +186,20 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme {
+  --tw-text-shadow-color: var(--shadow-primary);
+  --shadow-offset-close: 0.6px 0.6px;
+  --shadow-blur-close: 0.2px;
+  --text-border-width: 0.8px;
+  --text-border-corner-width: calc(var(--text-border-width) * 1.8);
+  --header-shadow: 0px 1px 0.5px var(--shadow-primary\/20);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-muted text-foreground;
   }
 }

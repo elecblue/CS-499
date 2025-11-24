@@ -1,26 +1,25 @@
 <script lang="ts" generics="TData, TValue">
     // Svelte/SvelteKit imports
-    import { onMount } from "svelte";
-    import { animalColumn, animalColumns } from "$lib/models"; 
+    import { dev } from "$app/environment";
+    import { getContext } from "svelte";
+    import { animalColumns } from "$lib/models";
+    import { getFilterContext, setFilterContext } from "$lib/filters.svelte";
 
     // Icon imports
-    
+    import { Construction, MapPinned } from "@lucide/svelte";
 
     // Component imports
     import Header from '$lib/components/custom/Header.svelte';
     import DataSearchFilters from '$lib/components/custom/DataSearchFilters.svelte';
     import DataTable from '$lib/components/custom/DataTable.svelte';
+    import * as Empty from '$lib/components/ui/empty/index';
     
     // State variables
-    // let animals: any[] | null | undefined = $state([]);
-    // let total = $state(0);
-    // let page = $state(1);
-    // let size = $state(10);
-    // let species = $state("");
-    // let outcome = $state("");
-    // let location = $state("");
     let { data } = $props();
-    import { filterState } from '$lib/filters.svelte';
+    let filterSelection = $state("All");
+    // setFilterContext("All");
+    // const filterValue = $state(getFilterContext());
+    // $inspect("filterValue", filterValue);
 
     // // Function to load animal data from the API
     // async function load() {
@@ -49,11 +48,51 @@
     <meta name="description" content="Explore and analyze animal rescue data with Rescue-Mate." />
 </svelte:head>
 
+{#if dev}
+<div class="absolute right-20 mx-4 mt-2 px-4 bg-muted dark:bg-muted font-mono text-xs text-muted-foreground dark:text-muted-foreground">
+    <div class="text-sm font-bold">Global State</div>
+    <div>
+        <span class="font-semibold">Selected Filter</span>: { filterSelection }
+    </div>
+</div>
+{/if}
+
 <Header />
 
 <!-- Search Filters -->
-<DataSearchFilters animals={data} total={filterState.total} page={filterState.page} size={filterState.size} species={filterState.species} outcome={filterState.outcome} location={filterState.location} />
+<DataSearchFilters bind:filterValue={ filterSelection } />
 
 <!-- Results Table -->
-<!-- <DataTable animals={animals} total={filterState.total} page={filterState.page} size={filterState.size} species={filterState.species} outcome={filterState.outcome} location={filterState.location} /> -->
 <DataTable data={ data.animals } columns={ animalColumns } />
+
+<!-- Split Panel -->
+<div class="flex max-w-full gap-4 mx-4">
+    <div class="flex-auto grow bg-card rounded-lg">
+        <Empty.Root class="border border-dashed border-primary/50 from-muted/30 to-background h-full bg-linear-to-b from-10%">
+            <Empty.Header>
+                <Empty.Media variant="default">
+                    <Construction class="stroke-primary size-16" />
+                </Empty.Media>
+                <Empty.Title>[Insert Data Visualization Here]</Empty.Title>
+                <Empty.Description>I'm still trying to decide on a charting tool to use with SvelteKit.</Empty.Description>
+            </Empty.Header>
+            <Empty.Content>
+                This panel will contain a visualization of the breed distribution for the rescue category selected.
+            </Empty.Content>
+        </Empty.Root>
+    </div>
+    <div class="flex-auto bg-card rounded-lg">
+        <Empty.Root class="border border-dashed border-primary/50 h-full from-muted/30 to-background bg-linear-to-b from-10%">
+            <Empty.Header>
+                <Empty.Media variant="default">
+                    <MapPinned class="stroke-primary size-16" />
+                </Empty.Media>
+                <Empty.Title>[Insert Location Component Here]</Empty.Title>
+                <Empty.Description>Google Maps or something else?</Empty.Description>
+            </Empty.Header>
+            <Empty.Content>
+                This panel will contain the map that reflects the location a selected animal was found.
+            </Empty.Content>
+        </Empty.Root>
+    </div>
+</div>

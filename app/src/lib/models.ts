@@ -53,10 +53,18 @@ export const PagedResult = <T extends z.ZodTypeAny>(item: T) =>
     });
 export type PagedResult<T> = z.infer<ReturnType<typeof PagedResult<z.ZodTypeAny>>>;
 
+export const FilterValue = z.enum(["All", "Disaster", "Mountain", "Water"]).default("All");
+export type FilterValue = z.infer<typeof FilterValue>;
+
+export const FilterOptions = z.strictObject({
+  value: z.enum(["All", "Disaster", "Mountain", "Water"]).default("All"),
+  label: z.string()
+});
+export type FilterOptions = z.infer<typeof FilterOptions>;
+
 // Tanstack Table column definitions
 
 export const columnHelper = createColumnHelper<Animal>();
-
 export const animalColumn = [
   columnHelper.display({
     id: 'select',

@@ -15,18 +15,3 @@ export const GET: RequestHandler = async ({ url }) => {
     });
     return json(data);
 };
-
-// export const GET: RequestHandler = async ({ url }) => {
-//     const q = {};
-//     const skip = 0;
-//     const size = 1000;
-    
-//     const [total, itemsRaw] = await Promise.all([
-//         countAAC(q),
-//         searchAAC(q, skip, size),
-//     ]);
-
-//     console.log("Count: ", total);
-
-//     return json(itemsRaw);
-// };
