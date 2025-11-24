@@ -177,17 +177,3 @@ sorting and filtering capabilities.*
         </Pagination.Root>
     </Card.Content>
 </Card.Root>
-
-<!-- <div class="inset-x-0 header">
-    <div class="flex h-14 items-center justify-between gap-8 px-4 sm:px-6">
-        <div class="flex items-center gap-4">
-            <button onclick={ () => { logTableState(); } } class="p-2 bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border">Get State</button>
-        </div>
-        <div class="flex items-center gap-6 max-md:hidden">
-            <span>Page size: {table.getState().pagination.pageSize}</span>
-        </div>
-        <div class="flex items-center gap-6 max-md:hidden">
-            <span>Page index: { table.getState().pagination.pageIndex }</span>
-        </div>
-    </div>
-</div> -->

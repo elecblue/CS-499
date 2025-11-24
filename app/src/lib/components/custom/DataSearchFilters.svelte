@@ -90,20 +90,6 @@ sorting and filtering capabilities.*
                         <!-- <Field.Label for="species">Species</Field.Label>
                         <Input id="species" bind:value={ species } onkeydown={ (e) => { if (e.key === "Enter") loadData(); } } placeholder="Such as dog, cat, bird, etc..."/> -->
                     </Field.Field>
-                    <!-- <Field.Field class="flex-auto">
-                        <Field.Label for="outcome">Outcome</Field.Label>
-                        <Input id="outcome" bind:value={ outcome } onkeydown={ (e) => { if (e.key === "Enter") loadData(); } } placeholder="Such as adoption, transfer, etc..."/>
-                    </Field.Field>
-                    <Field.Field class="flex-auto">
-                        <Field.Label for="location">Location</Field.Label>
-                        <Input disabled id="location" bind:value={ location } placeholder="(This doesn't work yet.)"/>
-                    </Field.Field>
-                    <Field.Field class="flex-1 self-end">
-                        <Button onclick={ loadData } class="cursor-pointer" variant="ghost">
-                            <Search />
-                            Search
-                        </Button>
-                    </Field.Field> -->
                 </div>
             </Field.Group>
         </Card.Content>
