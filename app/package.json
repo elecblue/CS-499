@@ -29,6 +29,7 @@
 		"@tailwindcss/vite": "^4.1.14",
 		"@tanstack/table-core": "^8.21.3",
 		"@types/better-sqlite3": "^7.6.13",
+		"@types/d3": "^7.4.3",
 		"@types/node": "^20",
 		"@vitest/browser": "^3.2.4",
 		"bits-ui": "^2.11.0",
@@ -56,9 +57,12 @@
 	},
 	"dependencies": {
 		"@ark-ui/svelte": "^5.13.0",
+		"@observablehq/plot": "^0.6.17",
 		"@tanstack/svelte-table": "^8.21.3",
 		"@types/bun": "^1.3.2",
+		"arquero": "^8.0.3",
 		"better-sqlite3": "^12.4.1",
+		"d3": "^7.9.0",
 		"mode-watcher": "^1.1.0",
 		"zod": "^4.1.12"
 	}

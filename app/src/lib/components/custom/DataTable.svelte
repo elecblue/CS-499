@@ -33,6 +33,7 @@
     import { filterState, filterBreeds, filterOptions } from '$lib/filters.svelte';
     import type { FilterValue } from "$lib/models";
     import { dev } from "$app/environment";
+    import { goto } from "$app/navigation";
 
     type DataTableProps<TData, TValue> = {
         columns: ColumnDef<any, any>[];
@@ -40,20 +41,10 @@
     };
 
     let { data, columns }: DataTableProps<TData, TValue> = $props();
-    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 20 });
+    let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 25 });
     let rowSelection = $state<RowSelectionState>({});
-    let columnFilters = $state<ColumnFiltersState>([]);
+    //let columnFilters = $state<ColumnFiltersState>([]);
     let filterValue = $state("All");
-
-    const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-        const rowValue = row.getValue(columnId);
-
-        if (Array.isArray(value)) {
-            return value.includes(rowValue) || value.includes(rowValue + " Mix");
-        } else {
-            return false;
-        }
-    };
 
     const table = cST({
         get data() {
@@ -67,9 +58,9 @@
             get rowSelection() {
                 return rowSelection;
             },
-            get columnFilters() {
-                return columnFilters;
-            },
+            // get columnFilters() {
+            //     return columnFilters;
+            // },
         },
         onPaginationChange: (updater) => {
             if (typeof updater === "function") {
@@ -85,54 +76,38 @@
                 rowSelection = updater;
             }
         },
-        onColumnFiltersChange: (updater) => {
-            if (typeof updater === "function") {
-                columnFilters = updater(columnFilters);
-            } else {
-                columnFilters = updater;
-            }
-        },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
-        getFilteredRowModel: getFilteredRowModel(),
+        //getFilteredRowModel: getFilteredRowModel(),
         enableRowPinning: true,
         enableRowSelection: true,
-        enableColumnFilters: true,
-        debugTable: true,
+        debugAll: false,
+        debugTable: false,
+        debugHeaders: false,
+        debugColumns: false,
     });
 
     function getFilterLabel(value: FilterValue) {
         const option = filterOptions.find(opt => opt.value === value);
-        console.log("Getting label for filter value: ", value, option);
+        if (dev) console.log("Getting label for filter value: ", value, option);
         return option ? option.label : "All Animals";
     }
 
+    /**
+     * Update the filter and modify the URL query parameters accordingly.
+     * @param selection
+     */
     function updateFilter(selection: FilterValue) {
         // Logic to update filters based on selected options
-        // const column = table.getColumn("breed");
-        // const currentFilter = column?.getFilterValue();
-
-        // if (selection === "All") {
-        //     column?.setFilterValue(undefined);
-        // } else {
-        //     const breeds = filterBreeds[selection.toLowerCase() as keyof typeof filterBreeds];
-            
-        //     // For simplicity, we filter by the first breed in the list
-        //     column?.setFilterValue(breeds[0]);
-        // }
-
         if (selection === "All") {
-            table.getColumn("breed")?.setFilterValue(undefined);
+            goto(`?`);  // Clear filter param
         } else {
-            const breeds = filterBreeds[selection.toLowerCase() as keyof typeof filterBreeds];
-            table.getColumn("breed")?.setFilterValue(breeds);
+            goto(`?filter=${selection.toLowerCase()}`);  // Update filter param with selection
         }
 
         filterValue = selection;
         if (dev) console.log("Filter updated to: ", filterValue);
     }
-
-    // let { species, outcome, location, page, size, total } = filterState;
 
     // function logTableState() {
     //     let tableLength = data.length
@@ -219,7 +194,7 @@ sorting and filtering capabilities.*
                         {/each}
                     </Table.Header>
                     <Table.Body>
-                        {#each table.getFilteredRowModel().rows as row (row.id)}
+                        {#each table.getPaginationRowModel().rows as row (row.id)}
                         <Table.Row data-state={row.getIsSelected() && "selected"}>
                             {#each row.getVisibleCells() as cell (cell.id)}
                             <Table.Cell class="p-3">
@@ -236,8 +211,11 @@ sorting and filtering capabilities.*
                 </Table.Root>
             </div>
         </ScrollArea>
-        <Pagination.Root count={ table.getRowCount() } perPage = { table.getState().pagination.pageSize } class="mt-4">
-            {#snippet children({ pages, currentPage = table.getState().pagination.pageIndex + 1 })}
+        <Pagination.Root 
+            count={ table.getRowCount() } 
+            perPage = { table.getState().pagination.pageSize } 
+            class="mt-4">
+            {#snippet children({ pages, currentPage })}
             <Pagination.Content>
                 <Pagination.Item>
                     <Pagination.PrevButton 
@@ -254,7 +232,9 @@ sorting and filtering capabilities.*
                         </Pagination.Item>
                     {:else}
                         <Pagination.Item>
-                            <Pagination.Link { page } onclick={ () => table.setPageIndex(page.value - 1) } isActive={ currentPage === page.value } class="cursor-pointer" >
+                            <Pagination.Link { page } 
+                                onclick={ () => table.setPageIndex( (page.value) ? (page.value - 1) : 0 ) } 
+                                isActive={ (table.getState().pagination.pageIndex + 1) === page.value } class="cursor-pointer" >
                                 { page.value }
                             </Pagination.Link>
                         </Pagination.Item>

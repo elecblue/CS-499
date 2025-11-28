@@ -2,6 +2,7 @@ import { and, arrayOverlaps, between, eq, ilike, like, or, sql } from "drizzle-o
 import { db } from "$lib/server/db";
 import { aac } from "$lib/server/db/schema";
 import type { SearchQuery } from "$lib/models";
+import { dev } from "$app/environment";
 
 const filterBreeds = {
 	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
@@ -35,9 +36,11 @@ export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
     const whereClauses = [];
 
     if (filters.filter && filters.filter.toLowerCase() !== "all") {
-        filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds]?.forEach((breed) => {
-            whereClauses.push(or(like(aac.breed, `%${breed}%`), like(aac.breed, `%${breed}% Mix`)));
-            //whereClauses.push(like(aac.breed, `%${breed}%`));
+        let breedList = filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds];
+
+        breedList.forEach((breed) => {
+            whereClauses.push(like(aac.breed, `%${breed}%`));
+            if (dev) console.log(`Adding filter for breed like %${breed}%`);
         })
     }
 
@@ -67,7 +70,7 @@ export async function searchAAC(filters: Partial<SearchQuery>, skip: number, lim
 
         breedList.forEach((breed) => {
             whereClauses.push(like(aac.breed, `%${breed}%`));
-            console.log(`Adding filter for breed like %${breed}%`);
+            if (dev) console.log(`Adding filter for breed like %${breed}%`);
         })
     }
 

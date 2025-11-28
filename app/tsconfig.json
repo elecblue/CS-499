@@ -10,7 +10,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"types": ["svelte", "vite/client", "vitest/globals", "bun-types"],
+		"types": ["svelte", "vite/client", "vitest/globals", "bun-types", "d3"],
 		"baseUrl": ".",
 		"paths": {
 			"$lib/*": ["src/lib/*"]
