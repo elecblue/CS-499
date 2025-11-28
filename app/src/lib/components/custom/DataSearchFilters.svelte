@@ -19,7 +19,7 @@
     
     // State props
     // let { animals = $bindable(), total = $bindable(), page = $bindable(), size = $bindable(), species = $bindable(), outcome = $bindable(), location = $bindable(), ...restProps } = $props();
-    let { filterValue = $bindable() } = $props();
+    let { filterValue = $bindable(), value = $bindable() } = $props();
     let filterSelection = $state(filterValue);
     // let filterSelection = $state(getFilterContext());
     // setFilterContext( returnStateValue(filterSelection) );
@@ -79,7 +79,7 @@ sorting and filtering capabilities.*
                         <Field.Label for="filter">Filter by Rescue Type</Field.Label>
                         <Select.Root type="single" bind:value={ filterSelection } onValueChange={ () => updateFilter(filterSelection) }>
                             <Select.Trigger class="w-fit cursor-pointer" aria-label="Select Dataset">
-                                <span>{getFilterLabel(filterSelection)}</span>
+                                <span>{ getFilterLabel(filterSelection) }</span>
                             </Select.Trigger>
                             <Select.Content>
                                 {#each filterOptions as option, i}

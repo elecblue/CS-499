@@ -6,6 +6,7 @@ import { countAAC, searchAAC } from "$lib/repository/aacRepo";
 export const GET: RequestHandler = async ({ url }) => {
     // supports ?species=&breed=&outcome=&location=lat,lng,radiusKm&page=&size=
     const data = await listAAC({
+        filter: url.searchParams.get("filter") ?? undefined,
         species: url.searchParams.get("species") ?? undefined,
         breed: url.searchParams.get("breed") ?? undefined,
         outcome: url.searchParams.get("outcome") ?? undefined,

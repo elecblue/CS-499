@@ -1,9 +1,10 @@
 <script lang="ts" generics="TData, TValue">
     // Svelte/SvelteKit imports
     import { dev } from "$app/environment";
-    import { getContext } from "svelte";
+    import { getContext, setContext } from "svelte";
     import { animalColumns } from "$lib/models";
     import { getFilterContext, setFilterContext } from "$lib/filters.svelte";
+    import { mode } from "mode-watcher";
 
     // Icon imports
     import { Construction, MapPinned } from "@lucide/svelte";
@@ -12,14 +13,15 @@
     import Header from '$lib/components/custom/Header.svelte';
     import DataSearchFilters from '$lib/components/custom/DataSearchFilters.svelte';
     import DataTable from '$lib/components/custom/DataTable.svelte';
+    import Footer from '$lib/components/custom/Footer.svelte';
     import * as Empty from '$lib/components/ui/empty/index';
     
     // State variables
     let { data } = $props();
     let filterSelection = $state("All");
-    // setFilterContext("All");
-    // const filterValue = $state(getFilterContext());
-    // $inspect("filterValue", filterValue);
+    setFilterContext("All");
+    const currentFilter = $state(() => filterSelection);
+    //$inspect("filterValue", currentFilter);
 
     // // Function to load animal data from the API
     // async function load() {
@@ -51,16 +53,16 @@
 {#if dev}
 <div class="absolute right-20 mx-4 mt-2 px-4 bg-muted dark:bg-muted font-mono text-xs text-muted-foreground dark:text-muted-foreground">
     <div class="text-sm font-bold">Global State</div>
-    <div>
-        <span class="font-semibold">Selected Filter</span>: { filterSelection }
-    </div>
+    <div><span class="font-semibold">Selected Filter</span>: { filterSelection }</div>
+    <div><span class="font-semibold">Current Mode</span>: { mode.current }</div>
 </div>
 {/if}
 
+<!-- Header -->
 <Header />
 
 <!-- Search Filters -->
-<DataSearchFilters bind:filterValue={ filterSelection } />
+<!-- <DataSearchFilters bind:filterValue={ filterSelection } /> -->
 
 <!-- Results Table -->
 <DataTable data={ data.animals } columns={ animalColumns } />
@@ -96,3 +98,6 @@
         </Empty.Root>
     </div>
 </div>
+
+<!-- Footer -->
+<Footer />

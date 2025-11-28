@@ -1,7 +1,13 @@
-import { and, between, eq, like, sql } from "drizzle-orm";
+import { and, arrayOverlaps, between, eq, ilike, like, or, sql } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { aac } from "$lib/server/db/schema";
 import type { SearchQuery } from "$lib/models";
+
+const filterBreeds = {
+	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
+	mountain: ["German Shepherd", "Siberian Husky", "Border Collie"],
+	disaster: ["Doberman Pinscher", "German Shepherd", "Golden Retriever", "Bloodhound", "Rottweiler"]
+};
 
 // Try to parse "lat,long,radiusKm" into a [minLat,maxLat,minLng,maxLng] bounding box.
 // If parsing fails, return undefined so callers can ignore.
@@ -27,6 +33,14 @@ function toBoundingBox(input?: string) {
 
 export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
     const whereClauses = [];
+
+    if (filters.filter && filters.filter.toLowerCase() !== "all") {
+        filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds]?.forEach((breed) => {
+            whereClauses.push(or(like(aac.breed, `%${breed}%`), like(aac.breed, `%${breed}% Mix`)));
+            //whereClauses.push(like(aac.breed, `%${breed}%`));
+        })
+    }
+
     if (filters.species) whereClauses.push(eq(aac.animalType, filters.species));
     if (filters.breed)   whereClauses.push(like(aac.breed, `%${filters.breed}%`));
     if (filters.outcome) whereClauses.push(eq(aac.outcomeType, filters.outcome));
@@ -47,6 +61,16 @@ export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
 
 export async function searchAAC(filters: Partial<SearchQuery>, skip: number, limit: number) {
     const whereClauses = [];
+
+    if (filters.filter && filters.filter.toLowerCase() !== "all") {
+        let breedList = filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds];
+
+        breedList.forEach((breed) => {
+            whereClauses.push(like(aac.breed, `%${breed}%`));
+            console.log(`Adding filter for breed like %${breed}%`);
+        })
+    }
+
     if (filters.species) whereClauses.push(eq(aac.animalType, filters.species));
     if (filters.breed)   whereClauses.push(like(aac.breed, `%${filters.breed}%`));
     if (filters.outcome) whereClauses.push(eq(aac.outcomeType, filters.outcome));
@@ -56,6 +80,8 @@ export async function searchAAC(filters: Partial<SearchQuery>, skip: number, lim
         whereClauses.push(between(aac.locationLat, box.minLat, box.maxLat));
         whereClauses.push(between(aac.locationLong, box.minLng, box.maxLng));
     }
+
+    // console.log(`${whereClauses.length} where clauses for filter ${filters.filter}`);
 
     // Order newest first, then by primary key to keep result stable
     const rows = await db
@@ -78,7 +104,9 @@ export async function searchAAC(filters: Partial<SearchQuery>, skip: number, lim
             ageUponOutcomeInWeeks: aac.ageUponOutcomeInWeeks,
         })
         .from(aac)
-        .where(whereClauses.length ? and(...whereClauses) : undefined)
+        .where(whereClauses.length ? or(...whereClauses) : undefined)
+        // .where(whereClauses.length ? and(...whereClauses) : undefined)
+        // .where(like(aac.breed, `%Labrador Retriever%`))
         //.orderBy(sql`datetime(aac.datetime) DESC`, aac.recNum)
         .orderBy(aac.recNum)
         .limit(limit)

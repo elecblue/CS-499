@@ -4,24 +4,35 @@
         type ColumnDef,
         type TableOptions,
         type PaginationState, 
+        type ColumnFiltersState,
+        type ColumnHelper,
+        type RowSelectionState,
+        type FilterFn,
+        type GlobalFilterTableState,
+        type GlobalFilterInstance,
         getCoreRowModel, 
         getPaginationRowModel, 
-        type ColumnHelper,
-
-        type RowSelectionState
-
+        getFilteredRowModel,
     } from "@tanstack/table-core";
-    //import { createSvelteTable } from "@tanstack/svelte-table";
 
+    // Icon imports
     import { ChevronLeftIcon, ChevronRightIcon } from "@lucide/svelte";
 
+    // UI component imports
     import { createSvelteTable as cST, FlexRender } from "$lib/components/ui/data-table";
     import { ScrollArea } from "$lib/components/ui/scroll-area/index";
     import * as Card from "$lib/components/ui/card/index";
     import * as Table from "$lib/components/ui/table/index";
     import * as Pagination from "$lib/components/ui/pagination/index";
+    import * as Field from "$lib/components/ui/field/index";
+    import * as Select from "$lib/components/ui/select/index";
+    import { Input } from "$lib/components/ui/input/index";
+    import { Button } from "$lib/components/ui/button/index";
 
-    import { filterState } from '$lib/filters.svelte';
+    // Logic and custom object imports
+    import { filterState, filterBreeds, filterOptions } from '$lib/filters.svelte';
+    import type { FilterValue } from "$lib/models";
+    import { dev } from "$app/environment";
 
     type DataTableProps<TData, TValue> = {
         columns: ColumnDef<any, any>[];
@@ -31,6 +42,18 @@
     let { data, columns }: DataTableProps<TData, TValue> = $props();
     let pagination = $state<PaginationState>({ pageIndex: 0, pageSize: 20 });
     let rowSelection = $state<RowSelectionState>({});
+    let columnFilters = $state<ColumnFiltersState>([]);
+    let filterValue = $state("All");
+
+    const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
+        const rowValue = row.getValue(columnId);
+
+        if (Array.isArray(value)) {
+            return value.includes(rowValue) || value.includes(rowValue + " Mix");
+        } else {
+            return false;
+        }
+    };
 
     const table = cST({
         get data() {
@@ -43,6 +66,9 @@
             },
             get rowSelection() {
                 return rowSelection;
+            },
+            get columnFilters() {
+                return columnFilters;
             },
         },
         onPaginationChange: (updater) => {
@@ -59,26 +85,63 @@
                 rowSelection = updater;
             }
         },
+        onColumnFiltersChange: (updater) => {
+            if (typeof updater === "function") {
+                columnFilters = updater(columnFilters);
+            } else {
+                columnFilters = updater;
+            }
+        },
         getCoreRowModel: getCoreRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
         enableRowPinning: true,
         enableRowSelection: true,
+        enableColumnFilters: true,
+        debugTable: true,
     });
 
-    let { species, outcome, location, page, size, total } = filterState;
+    function getFilterLabel(value: FilterValue) {
+        const option = filterOptions.find(opt => opt.value === value);
+        console.log("Getting label for filter value: ", value, option);
+        return option ? option.label : "All Animals";
+    }
 
-    const range = (start: number, stop: number, step: number = 1) => 
-        Array.from({ length: Math.ceil((stop - start) / step) },
-            (_, i) => start + i * step
-        );
+    function updateFilter(selection: FilterValue) {
+        // Logic to update filters based on selected options
+        // const column = table.getColumn("breed");
+        // const currentFilter = column?.getFilterValue();
 
-    function logTableState() {
-        let tableLength = data.length
-        console.log("DataTable mounted with data:", tableLength);
-        console.log("Can go to next page? ", table.getCanNextPage());
-        console.log($state.snapshot(pagination));
-        console.log(data);
-    };
+        // if (selection === "All") {
+        //     column?.setFilterValue(undefined);
+        // } else {
+        //     const breeds = filterBreeds[selection.toLowerCase() as keyof typeof filterBreeds];
+            
+        //     // For simplicity, we filter by the first breed in the list
+        //     column?.setFilterValue(breeds[0]);
+        // }
+
+        if (selection === "All") {
+            table.getColumn("breed")?.setFilterValue(undefined);
+        } else {
+            const breeds = filterBreeds[selection.toLowerCase() as keyof typeof filterBreeds];
+            table.getColumn("breed")?.setFilterValue(breeds);
+        }
+
+        filterValue = selection;
+        if (dev) console.log("Filter updated to: ", filterValue);
+    }
+
+    // let { species, outcome, location, page, size, total } = filterState;
+
+    // function logTableState() {
+    //     let tableLength = data.length
+    //     console.log("DataTable mounted with data:", tableLength);
+    //     console.log("Can go to next page? ", table.getCanNextPage());
+    //     console.log($state.snapshot(pagination));
+    //     console.log(data);
+    // };
+
 </script>
 
 <!--
@@ -92,6 +155,39 @@ sorting and filtering capabilities.*
 ### Usage
 `<DataTable />`
 -->
+
+<!-- <DataSearchFilters bind:value={ filterValue } /> -->
+
+<!-- Search Filters -->
+<div class="search-filters">
+    <Card.Root class="max-w-full mx-4">
+        <Card.Header>
+            <Card.Title>Search Filters</Card.Title>
+            <Card.Description>Refine your search criteria to find specific animal rescue data.</Card.Description>
+        </Card.Header>
+        <Card.Content>
+            <Field.Group>
+                <div class="flex gap-4 filters-group">
+                    <Field.Field class="flex-auto">
+                        <Field.Label for="filter">Filter by Rescue Type</Field.Label>
+                        <Select.Root type="single" bind:value={ filterValue } onValueChange={ () => updateFilter(filterValue as FilterValue) }>
+                            <Select.Trigger class="w-fit cursor-pointer" aria-label="Select Dataset">
+                                <span>{ getFilterLabel(filterValue as FilterValue) }</span>
+                            </Select.Trigger>
+                            <Select.Content>
+                                {#each filterOptions as option, i}
+                                    <Select.Item value={ option.value } label={ option.label } class="cursor-pointer" />
+                                {/each}
+                            </Select.Content>
+                        </Select.Root>
+                        <!-- <Field.Label for="species">Species</Field.Label>
+                        <Input id="species" bind:value={ species } onkeydown={ (e) => { if (e.key === "Enter") loadData(); } } placeholder="Such as dog, cat, bird, etc..."/> -->
+                    </Field.Field>
+                </div>
+            </Field.Group>
+        </Card.Content>
+    </Card.Root>
+</div>
 
 <!-- Data Table Powered by TanStack Table -->
  <Card.Root class="max-w-full m-4 bg-card">
@@ -123,7 +219,7 @@ sorting and filtering capabilities.*
                         {/each}
                     </Table.Header>
                     <Table.Body>
-                        {#each table.getRowModel().rows as row (row.id)}
+                        {#each table.getFilteredRowModel().rows as row (row.id)}
                         <Table.Row data-state={row.getIsSelected() && "selected"}>
                             {#each row.getVisibleCells() as cell (cell.id)}
                             <Table.Cell class="p-3">

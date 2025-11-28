@@ -1,5 +1,6 @@
 import { createContext } from "svelte";
 import { FilterOptions, FilterValue } from "./models";
+import mountain from "@lucide/svelte/icons/mountain";
 
 export const [getFilterContext, setFilterContext] = createContext<FilterValue>();
 
@@ -18,3 +19,25 @@ export const filterOptions: FilterOptions[] = [
 	{ value: "Mountain", label: "Mountain & Wilderness Rescue" },
 	{ value: "Water", label: "Water Rescue" }
 ];
+
+export const filterBreeds = {
+	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
+	mountain: ["German Shepherd", "Siberian Husky", "Border Collie"],
+	disaster: ["Doberman Pinscher", "German Shepherd", "Golden Retriever", "Bloodhound", "Rottweiler"]
+};
+
+class FilterService {
+	static filters: FilterOptions[] = filterOptions;
+
+	static getFilters() {
+		return this.filters;
+	}
+
+	active = $state(FilterService.filters[0]);
+
+	setActiveFilter(filter: FilterOptions) {
+		this.active = filter;
+	}
+}
+
+export const filterService = new FilterService();

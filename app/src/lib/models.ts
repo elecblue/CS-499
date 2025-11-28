@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { ColumnDef } from '@tanstack/table-core';
+import type { ColumnDef, FilterFn } from '@tanstack/table-core';
 import { createColumnHelper } from '@tanstack/table-core';
 import { renderComponent } from './components/ui/data-table';
 import DataTableCheckbox from "$lib/components/custom/DataTableCheckbox.svelte";
@@ -32,6 +32,7 @@ export type Animal = z.infer<typeof Animal>;
  * SearchQuery Zod schema representing the structure of search query parameters.
  */
 export const SearchQuery = z.object({
+  filter: z.string().optional(),
   species: z.string().optional(),
   breed: z.string().optional(),
   outcome: z.string().optional(),
@@ -156,6 +157,16 @@ export const animalColumn = [
   }),
 ];
 
+const filterBreeds: FilterFn<Animal> = (row, columnId, value, addMeta) => {
+  const rowValue = row.getValue(columnId);
+
+  if (Array.isArray(value)) {
+      return value.includes(rowValue) || value.includes(rowValue + " Mix");
+  } else {
+      return false;
+  }
+}
+
 export const animalColumns: ColumnDef<Animal>[] = [
   {
     id: 'select',
@@ -196,7 +207,8 @@ export const animalColumns: ColumnDef<Animal>[] = [
   {
     accessorKey: 'breed',
     header: 'Breed',
-    cell: ({ row }) => row.original.breed
+    cell: ({ row }) => row.original.breed,
+    filterFn: filterBreeds
   },
   {
     accessorKey: 'dateOfBirth',

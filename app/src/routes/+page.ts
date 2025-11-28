@@ -14,6 +14,8 @@ const filterParams = () => {
 export const load: PageLoad = async ({ fetch, url }) => {
     // const params = 0;
     const params = filterParams();
+    const filter = url.searchParams.get("filter");
+    if (filter) params.set("filter", filter);
     const res = await fetch(`/api/animals?` + params.toString());
     const data = await res.json();
     const animals = data.items;
