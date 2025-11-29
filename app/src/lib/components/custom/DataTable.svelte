@@ -1,18 +1,18 @@
 <script lang="ts" generics="TData, TValue">
     import { 
-        type CoreOptions,
+        // type CoreOptions,
         type ColumnDef,
-        type TableOptions,
+        // type TableOptions,
         type PaginationState, 
-        type ColumnFiltersState,
-        type ColumnHelper,
+        // type ColumnFiltersState,
+        // type ColumnHelper,
         type RowSelectionState,
-        type FilterFn,
-        type GlobalFilterTableState,
-        type GlobalFilterInstance,
+        // type FilterFn,
+        // type GlobalFilterTableState,
+        // type GlobalFilterInstance,
         getCoreRowModel, 
         getPaginationRowModel, 
-        getFilteredRowModel,
+        //getFilteredRowModel,
     } from "@tanstack/table-core";
 
     // Icon imports
@@ -26,12 +26,13 @@
     import * as Pagination from "$lib/components/ui/pagination/index";
     import * as Field from "$lib/components/ui/field/index";
     import * as Select from "$lib/components/ui/select/index";
-    import { Input } from "$lib/components/ui/input/index";
-    import { Button } from "$lib/components/ui/button/index";
+    // import { Input } from "$lib/components/ui/input/index";
+    // import { Button } from "$lib/components/ui/button/index";
 
     // Logic and custom object imports
     import { filterState, filterBreeds, filterOptions } from '$lib/filters.svelte';
-    import type { FilterValue } from "$lib/models";
+    import { setMapContext, getMapContext } from "$lib/services/context.svelte";
+    import type { Animal, FilterValue } from "$lib/models";
     import { dev } from "$app/environment";
     import { goto } from "$app/navigation";
 
@@ -45,6 +46,27 @@
     let rowSelection = $state<RowSelectionState>({});
     //let columnFilters = $state<ColumnFiltersState>([]);
     let filterValue = $state("All");
+    // let selected = $state<Animal>({
+    //     recNum: 0,
+    //     ageUponOutcome: "1 years",
+    //     animalId: "A000000",
+    //     animalType: "Humanoid",
+    //     breed: "Romulan",
+    //     color: "Gray",
+    //     dateOfBirth: "2024-11-29",
+    //     datetime: "2024-11-29 12:00:00Z",
+    //     monthyear: "2024-11-29T12:00:00Z",
+    //     name: "Zarlock",
+    //     outcomeSubtype: "",
+    //     outcomeType: "Return to Planet",
+    //     sexUponOutcome: "Male",
+    //     locationLat: 30.6586627849508,
+    //     locationLong: -97.5814399775041,
+    //     ageUponOutcomeInWeeks: 52,
+    // });
+
+    // setMapContext(selected);
+    let selected = getMapContext();
 
     const table = cST({
         get data() {
@@ -81,6 +103,7 @@
         //getFilteredRowModel: getFilteredRowModel(),
         enableRowPinning: true,
         enableRowSelection: true,
+        enableMultiRowSelection: false,
         debugAll: false,
         debugTable: false,
         debugHeaders: false,
@@ -107,6 +130,14 @@
 
         filterValue = selection;
         if (dev) console.log("Filter updated to: ", filterValue);
+    }
+
+    function updateSelected() {
+        const selectedRow = table.getSelectedRowModel().flatRows[0];
+        if (selectedRow) {
+            selected.update(selectedRow.original as Animal);
+            if (dev) console.log("Selected row updated: ", selected);
+        }
     }
 
     // function logTableState() {
@@ -178,7 +209,7 @@ sorting and filtering capabilities.*
                         {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
                         <Table.Row>
                             {#each headerGroup.headers as header (header.id)}
-                            <Table.Head colspan={header.colSpan} class="p-3">
+                            <Table.Head colspan={header.colSpan} class="p-3 sticky top-0">
                                 {#if !header.isPlaceholder}
                                     {#if header.column.getIsFirstColumn()}
                                     <div class="pr-4">
@@ -211,6 +242,9 @@ sorting and filtering capabilities.*
                 </Table.Root>
             </div>
         </ScrollArea>
+        <div class="">
+            <button class="" onclick={ () => updateSelected() }>View on Map</button>
+        </div>
         <Pagination.Root 
             count={ table.getRowCount() } 
             perPage = { table.getState().pagination.pageSize } 

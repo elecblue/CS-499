@@ -3,6 +3,8 @@
     import { dev } from "$app/environment";
     import { animalColumns } from "$lib/models";
     import { mode } from "mode-watcher";
+    import { setMapContext } from "$lib/services/context.svelte";
+    import type { Animal, FilterValue } from "$lib/models";
 
     // Icon imports
     import { Construction, MapPinned } from "@lucide/svelte";
@@ -12,6 +14,7 @@
     import DataSearchFilters from '$lib/components/custom/DataSearchFilters.svelte';
     import DataTable from '$lib/components/custom/DataTable.svelte';
     import DataViz from '$lib/components/custom/DataViz.svelte';
+    import Location from '$lib/components/custom/Location.svelte';
     import Footer from '$lib/components/custom/Footer.svelte';
     import * as Empty from '$lib/components/ui/empty/index';
     
@@ -62,7 +65,7 @@
         </Empty.Root>
     </div> -->
     <DataViz /> 
-    <div class="flex-auto bg-card rounded-lg">
+    <!-- <div class="flex-auto bg-card rounded-lg">
         <Empty.Root class="border border-dashed border-primary/50 h-full from-muted/30 to-background bg-linear-to-b from-10%">
             <Empty.Header>
                 <Empty.Media variant="default">
@@ -75,7 +78,8 @@
                 This panel will contain the map that reflects the location a selected animal was found.
             </Empty.Content>
         </Empty.Root>
-    </div>
+    </div> -->
+    <Location />
 </div>
 
 <!-- Footer -->

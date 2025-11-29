@@ -8,11 +8,11 @@
         ...restProps
     }: ComponentProps<typeof Checkbox> = $props();
 
-    function selectChecker() {
-        console.log("Checkbox clicked");
-        onCheckedChange(!checked);
+    function selectChecker(checked: boolean) {
+        console.log("Checkbox clicked", checked);
+        onCheckedChange(!!checked);
     }
 </script>
 
-<Checkbox bind:checked={ () => checked, onCheckedChange } 
+<Checkbox bind:checked={ () => checked, selectChecker } 
     { ...restProps } class="cursor-pointer" />

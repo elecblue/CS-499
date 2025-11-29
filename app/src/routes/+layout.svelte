@@ -1,8 +1,11 @@
 <script lang="ts">
 	import '../app.css';
 	import { ModeWatcher } from "mode-watcher";
+	import { setMapContext } from '$lib/services/context.svelte';
 	
 	let { children } = $props();
+
+	const selected = setMapContext();
 </script>
 
 <svelte:head>

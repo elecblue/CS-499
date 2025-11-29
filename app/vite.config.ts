@@ -2,11 +2,15 @@ import tailwindcss from '@tailwindcss/vite';
 import devtoolsJson from 'vite-plugin-devtools-json';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
+import svg from '@poppanator/sveltekit-svg';
 
 export default defineConfig({
 	plugins: [
 		tailwindcss(),
 		sveltekit(),
+		svg({
+			includePaths: ['./src/lib/assets/', './src/static/icons/'],
+		}),
 		devtoolsJson()
 	],
 	test: {

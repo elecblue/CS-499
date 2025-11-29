@@ -5,13 +5,9 @@
     import { onMount } from "svelte";
     import { getDistribution } from "$lib/services/aac.remote";
 
-    import { filterBreeds } from "$lib/filters.svelte";
-
     // Icon imports
 
     // Component imports
-    // import * as aq from "arquero";
-    // import * as Plot from "@observablehq/plot";
     import * as Card from "$lib/components/ui/card/index";
     import * as Chart from "$lib/components/ui/chart/index";
     import { Skeleton } from "$lib/components/ui/skeleton/index";
@@ -20,14 +16,7 @@
     import { format } from "@layerstack/utils";
 
     // State variables
-    //let { data } = $props();
     const filter = $derived(page.url.searchParams.get("filter") || "all");
-    //const chartData = await getDistribution(filter);
-
-    // const animalData = $state(
-    //     //data ? data.filter( (d: string) => d.toLowerCase().includes(page.params.filter[0])) : []
-    //     data.slice(0, 10)
-    // );
 
     // Chart configuration
     let container: HTMLDivElement;
@@ -38,33 +27,18 @@
         }
     } satisfies Chart.ChartConfig;
 
-    // onMount(() => {
-    //     if (dev) console.log("DataViz component mounted");
-
-    //     const table = aq.table(data)
-    //         .groupby("breed")
-    //         .rollup({ count: aq.op.count() })
-    //         .orderby(aq.desc("count"));
-
-    //     const chartData = table.objects();
-
-    //     const chart = Plot.plot({
-    //         margin: 20,
-    //         title: `Water Rescue`,
-    //         marks: [
-                
-    //         ]
-    //     })
-    // })
+    onMount(() => {
+        if (dev) console.log("DataViz component mounted");
+    })
 </script>
 
-<Card.Root class="flex-auto basis-1/2 grow bg-card rounded-lg">
+<Card.Root class="flex-auto grow-0 bg-card rounded-lg">
     <Card.Header>
         <Card.Title>{charConfig.desktop.label}</Card.Title>
         <Card.Description>Visualize breed distribution for your selected rescue type.</Card.Description>
     </Card.Header>
-    <Card.Content class="flex justify-center items-center">
-        <Chart.Container config={ charConfig } class="min-h-64 h-full">
+    <Card.Content class="flex flex-col justify-center items-center self-center">
+        <Chart.Container config={ charConfig } class="min-h-64 h-full self-center">
         {#await getDistribution(filter)}
             <Skeleton class="w-full h-64 rounded-full" />
         {:then chartData}
