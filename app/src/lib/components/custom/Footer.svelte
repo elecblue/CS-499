@@ -39,7 +39,7 @@
             <div class="flex flex-col gap-4 text-sm/6 text-gray-700 sm:flex-row sm:gap-2 sm:pr-4 dark:text-gray-400">
                 <span>Built by Nik Myers at SNHU</span>
                 <span class="max-sm:hidden">•</span>
-                <Drawer.Root open={ true }>
+                <Drawer.Root>
                     <Drawer.Trigger class="hover:underline hover:text-primary cursor-pointer">Credits</Drawer.Trigger>
                     <Drawer.Content>
                         <div class="mx-auto w-full max-w-sm">
