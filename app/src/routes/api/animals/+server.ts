@@ -1,10 +1,15 @@
+/**
+ * @file API endpoint for AAC animal data.
+ * @author Nik Myers <nikolas.myers@snhu.edu>
+ * @version 0.9.0
+ */
 import type { RequestHandler } from "@sveltejs/kit";
 import { json } from "@sveltejs/kit";
 import { listAAC } from "$lib/services/aacService";
 import { countAAC, searchAAC } from "$lib/repository/aacRepo";
 
 export const GET: RequestHandler = async ({ url }) => {
-    // supports ?species=&breed=&outcome=&location=lat,lng,radiusKm&page=&size=
+    // supports ?filter=&species=&breed=&outcome=&location=lat,lng,radiusKm&page=&size=
     const data = await listAAC({
         filter: url.searchParams.get("filter") ?? undefined,
         species: url.searchParams.get("species") ?? undefined,

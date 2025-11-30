@@ -39,20 +39,24 @@
         <Card.Description>View the rescue location of the selected animal on a map.</Card.Description>
     </Card.Header>
     <Card.Content>
-        <MapLibre zoom={ 7 } center={[-97.3, 30.5]} class="h-[400px]" 
+        <MapLibre zoom={ 7 } center={[-97.3, 30.5]} class="h-[400px] border border-border rounded-md" 
             minZoom={ 6 } maxZoom={ 9 }
             style="https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json">
             <Marker bind:lnglat={ context.location }>
                 {#snippet content()}
                 <div class="text-center leading-none">
                     <div class="text-3xl">📍</div>
-                    <div class="font-base text-accent-foreground/80 drop-shadow-sm/20">({ context.location.lat.toFixed(4) }, { context.location.lon.toFixed(4) })</div>
+                    <div class="font-mono text-xs leading-4 align-middle mix-blend-overlay text-accent-foreground/90 text-shadow-2xs text-shadow-accent-100">
+                        ({ context.location.lat.toFixed(4) || 0.0 }, { context.location.lon.toFixed(4) || 0.0 })
+                    </div>
                 </div>
                 {/snippet}
                 <Popup class="rounded-lg text-black [&_button]:mr-2" bind:open={ popupOpen } offset={ offsets }>
-                    <div class="font-medium">{context.name || "Unknown"}</div>
-                    <div class="font-normal text-xs">{context.selected.animalId || "Unknown ID"}</div>
-                    <div>Lat/Long: { context.location.lat.toFixed(4) }, { context.location.lon.toFixed(4) }</div>
+                    <div class="font-medium text-sm">
+                        { context.name || "A Dog Has No Name" }
+                        <span class="font-mono text-xs">{ context.selected.animalId || "Unknown ID" }</span>
+                    </div>
+                    <div>{ context.selected.breed || "Unknown Breed" }</div>
                 </Popup>
             </Marker>
         </MapLibre>

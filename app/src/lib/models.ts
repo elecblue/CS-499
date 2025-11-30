@@ -1,3 +1,8 @@
+/**
+ * @file Defines Zod schemas and TypeScript types for the application's data models.
+ * @author Nik Myers <nikolas.myers@snhu.edu>
+ * @version 0.9.0
+ */
 import { z } from 'zod';
 import type { ColumnDef, FilterFn } from '@tanstack/table-core';
 import { createColumnHelper } from '@tanstack/table-core';
@@ -54,9 +59,15 @@ export const PagedResult = <T extends z.ZodTypeAny>(item: T) =>
     });
 export type PagedResult<T> = z.infer<ReturnType<typeof PagedResult<z.ZodTypeAny>>>;
 
+/**
+ * FilterValue Zod schema representing the possible filter values.
+ */
 export const FilterValue = z.enum(["All", "Disaster", "Mountain", "Water"]).default("All");
 export type FilterValue = z.infer<typeof FilterValue>;
 
+/** 
+ * FilterOptions Zod schema representing the structure of filter options.
+ */
 export const FilterOptions = z.strictObject({
   value: z.enum(["All", "Disaster", "Mountain", "Water"]).default("All"),
   label: z.string()
@@ -167,6 +178,17 @@ const filterBreeds: FilterFn<Animal> = (row, columnId, value, addMeta) => {
   }
 }
 
+const dateTimeOptions: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hour12: true,
+  timeZone: 'UTC'
+};
+
 export const animalColumns: ColumnDef<Animal>[] = [
   {
     id: 'select',
@@ -223,22 +245,27 @@ export const animalColumns: ColumnDef<Animal>[] = [
   {
     accessorKey: 'ageUponOutcomeInWeeks',
     header: 'Age in Weeks',
-    cell: ({ row }) => row.original.ageUponOutcomeInWeeks
+    cell: ({ row }) => row.original.ageUponOutcomeInWeeks?.toFixed(2)
   },
   {
     accessorKey: 'color',
     header: 'Color',
     cell: ({ row }) => row.original.color
   },
-  {
-    accessorKey: 'datetime',
-    header: 'Datetime',
-    cell: ({ row }) => row.original.datetime
-  },
+  // {
+  //   accessorKey: 'datetime',
+  //   header: 'Datetime',
+  //   cell: ({ row }) => row.original.datetime
+  // },
   {
     accessorKey: 'monthyear',
     header: 'Date',
-    cell: ({ row }) => row.original.monthyear
+    cell: ({ row }) => `${new Date(row.original.monthyear ?? "").toLocaleDateString('en-US')}`
+  },
+  {
+    accessorKey: 'time',
+    header: 'Time',
+    cell: ({ row }) => `${new Date(row.original.monthyear ?? "").toLocaleTimeString('en-US')}`
   },
   {
     accessorKey: 'outcomeType',
@@ -248,7 +275,7 @@ export const animalColumns: ColumnDef<Animal>[] = [
   {
     accessorKey: 'outcomeSubtype',
     header: 'Outcome Subtype',
-    cell: ({ row }) => row.original.outcomeSubtype
+    cell: ({ row }) => `${row.original.outcomeSubtype || "None"}`
   },
   {
     accessorKey: 'sexUponOutcome',

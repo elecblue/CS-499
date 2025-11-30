@@ -46,26 +46,6 @@
     let rowSelection = $state<RowSelectionState>({});
     //let columnFilters = $state<ColumnFiltersState>([]);
     let filterValue = $state("All");
-    // let selected = $state<Animal>({
-    //     recNum: 0,
-    //     ageUponOutcome: "1 years",
-    //     animalId: "A000000",
-    //     animalType: "Humanoid",
-    //     breed: "Romulan",
-    //     color: "Gray",
-    //     dateOfBirth: "2024-11-29",
-    //     datetime: "2024-11-29 12:00:00Z",
-    //     monthyear: "2024-11-29T12:00:00Z",
-    //     name: "Zarlock",
-    //     outcomeSubtype: "",
-    //     outcomeType: "Return to Planet",
-    //     sexUponOutcome: "Male",
-    //     locationLat: 30.6586627849508,
-    //     locationLong: -97.5814399775041,
-    //     ageUponOutcomeInWeeks: 52,
-    // });
-
-    // setMapContext(selected);
     let selected = getMapContext();
 
     const table = cST({
@@ -201,7 +181,7 @@ sorting and filtering capabilities.*
         <Card.Title>Rescue Animal Data</Card.Title>
         <Card.Description>Browse database of { table.getRowCount() } animals.</Card.Description>
     </Card.Header>
-    <Card.Content>
+    <Card.Content class="relative">
         <ScrollArea orientation="both" class="w-full max-w-full h-100 rounded-md border">
             <div class="box-border rounded-md">
                 <Table.Root>
@@ -229,21 +209,21 @@ sorting and filtering capabilities.*
                         <Table.Row data-state={row.getIsSelected() && "selected"}>
                             {#each row.getVisibleCells() as cell (cell.id)}
                             <Table.Cell class="p-3">
-                                <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+                                <FlexRender content={ cell.column.columnDef.cell } context={ cell.getContext() } />
                             </Table.Cell>
                             {/each}
                         </Table.Row>
                         {:else}
                         <Table.Row>
-                            <Table.Cell colspan={columns.length} class="h-24 text-center">No results.</Table.Cell>
+                            <Table.Cell colspan={ columns.length } class="h-24 text-center">No results.</Table.Cell>
                         </Table.Row>
                         {/each}
                     </Table.Body>
                 </Table.Root>
             </div>
         </ScrollArea>
-        <div class="">
-            <button class="" onclick={ () => updateSelected() }>View on Map</button>
+        <div class="absolute -bottom-4 text-sm">
+            <button class="border border-solid my-4 p-2 rounded-lg cursor-pointer transition-colors hover:bg-amber-300" onclick={ () => updateSelected() }>View on Map</button>
         </div>
         <Pagination.Root 
             count={ table.getRowCount() } 

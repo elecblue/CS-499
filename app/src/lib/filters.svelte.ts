@@ -1,6 +1,10 @@
+/**
+ * @file Defines filter state, options, and breed lists for the AAC application.
+ * @author Nik Myers <nikolas.myers@snhu.edu>
+ * @version 0.9.0
+ */
 import { createContext } from "svelte";
 import { FilterOptions, FilterValue } from "./models";
-import mountain from "@lucide/svelte/icons/mountain";
 
 export const [getFilterContext, setFilterContext] = createContext<FilterValue>();
 
@@ -20,6 +24,9 @@ export const filterOptions: FilterOptions[] = [
 	{ value: "Water", label: "Water Rescue" }
 ];
 
+/**
+ * Object defining the breed lists for specific filters.
+ */
 export const filterBreeds = {
 	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
 	mountain: ["German Shepherd", "Siberian Husky", "Border Collie"],

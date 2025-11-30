@@ -39,20 +39,22 @@
             <div class="flex flex-col gap-4 text-sm/6 text-gray-700 sm:flex-row sm:gap-2 sm:pr-4 dark:text-gray-400">
                 <span>Built by Nik Myers at SNHU</span>
                 <span class="max-sm:hidden">•</span>
-                <Drawer.Root>
+                <Drawer.Root open={ true }>
                     <Drawer.Trigger class="hover:underline hover:text-primary cursor-pointer">Credits</Drawer.Trigger>
                     <Drawer.Content>
                         <div class="mx-auto w-full max-w-sm">
                             <Drawer.Header>
                                 <Drawer.Title>About This Project</Drawer.Title>
                                 <Drawer.Description>
-                                    Rescue-Mate is a capstone project developed by Nik Myers for Southern New Hampshire University (SNHU)'s CS-499 course. 
-                                    It serves as an animal data explorer for rescue operations, allowing users to analyze and visualize animal rescue data.
+                                    Rescue-Mate is a project developed by Nik Myers for Southern New Hampshire University's Computer Science capstone (CS-499). Derived
+                                    from CS-340's major project, it serves as an animal data explorer for rescue operations, allowing users to analyze and visualize animal rescue data.<br />
+                                    <br />
+                                    More information can be found in the repository.
                                 </Drawer.Description>
                             </Drawer.Header>
-                            <div class="p-4 pb-0">
-                                <div class="flex flex-col items-start justify-center space-x-2">
-                                    <span class="font-semibold mb-1">Technologies Used</span>
+                            <div class="px-4">
+                                <div class="flex flex-col gap-y-1.5 items-start justify-center">
+                                    <span class="font-semibold">Technologies Used</span>
                                     <ul class="font-normal list-none list-outside text-muted-foreground text-sm">
                                         {#each Object.values(techStack) as tech}
                                         {@const Icon = tech.icon}
@@ -66,6 +68,13 @@
                                             </li>
                                         {/each}
                                     </ul>
+                                    <span class="font-semibold">Data Sources</span>
+                                    <div class="font-normal text-muted-foreground text-sm">
+                                        The data source used is a cleaned-up snapshot of 
+                                        <a href="https://data.austintexas.gov/Health-and-Community-Services/Austin-Animal-Center-Outcomes-10-01-2013-to-05-05-/9t4d-g238/about_data" target="_blank" class="text-amber-500 hover:underline">open data</a> 
+                                        provided by the City of Austin, Texas. This dataset contains records from the <a href="https://www.austintexas.gov/department/animal-services" target="_blank" class="text-amber-500 hover:underline">Austin Animal Center</a>, 
+                                        the largest no-kill shelter in the United States. The AAC provides shelter to more than 18,000 animals each year.
+                                    </div>
                                 </div>
                             </div>
                             <Drawer.Footer>

@@ -1,5 +1,9 @@
+/**
+ * @file Utility functions and constants used across the application.
+ * @author Nik Myers <nikolas.myers@snhu.edu>
+ * @version 0.9.0
+ */
 import { ChartPie, CodeXml, Component, Database, Dessert, MapPinned, Table, Variable, Wind, type Icon as IconType } from "@lucide/svelte";
-
 
 /**
  * Generate an arithmetic sequence of numbers.

@@ -1,29 +1,49 @@
+/**
+ * @file Repository functions to query the AAC database.
+ * @author Nik Myers <nikolas.myers@snhu.edu>
+ * @version 0.9.0
+ */
 import { and, arrayOverlaps, between, eq, ilike, like, or, sql } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { aac } from "$lib/server/db/schema";
 import type { SearchQuery } from "$lib/models";
 import { dev } from "$app/environment";
+import { filterBreeds } from "$lib/filters.svelte";
 
-const filterBreeds = {
-	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
-	mountain: ["German Shepherd", "Siberian Husky", "Border Collie"],
-	disaster: ["Doberman Pinscher", "German Shepherd", "Golden Retriever", "Bloodhound", "Rottweiler"]
-};
+// const filterBreeds = {
+// 	water: ["Labrador Retriever", "Newfoundland", "Golden Retriever"],
+// 	mountain: ["German Shepherd", "Siberian Husky", "Border Collie"],
+// 	disaster: ["Doberman Pinscher", "German Shepherd", "Golden Retriever", "Bloodhound", "Rottweiler"]
+// };
 
-// Try to parse "lat,long,radiusKm" into a [minLat,maxLat,minLng,maxLng] bounding box.
-// If parsing fails, return undefined so callers can ignore.
+/**
+ * Convert a location string into a bounding box for filtering.
+ * 
+ * *Not yet implemented into application logic* 
+ * @param {string?} input Comma-separated latitude, longitude, radius in km
+ * @returns 
+ */
 function toBoundingBox(input?: string) {
+    // Return undefined if no input
     if (!input) return undefined;
+    // Split input into parts and trim whitespace
     const parts = input.split(",").map((p) => p.trim());
+
+    // Must have exactly 3 parts: lat, lng, radius (in km)
     if (parts.length !== 3) return undefined;
     const [latS, lngS, rS] = parts;
+
+    // Parse parts into numbers
     const lat = Number(latS), lng = Number(lngS), rKm = Number(rS);
+
+    // Validate parsed numbers
     if (!Number.isFinite(lat) || !Number.isFinite(lng) || !Number.isFinite(rKm) || rKm <= 0) return undefined;
 
-    // very rough degree-to-km (works fine around Austin; if you want haversine later, we can add it)
-    const latDeg = rKm / 111;           // 1° lat ≈ 111 km
+    // Rough conversion from km to degrees
+    const latDeg = rKm / 111;   // 1° lat is about 111 km
     const lngDeg = rKm / (111 * Math.cos((lat * Math.PI) / 180) || 1);
 
+    // Return bounding box
     return {
         minLat: lat - latDeg,
         maxLat: lat + latDeg,
@@ -32,9 +52,17 @@ function toBoundingBox(input?: string) {
     };
 }
 
+/**
+ * Count AAC animals based on search filters.
+ * 
+ * @param {Partial<SearchQuery>} filters The search filters to apply.
+ * @returns {Promise<number>} The count of animals matching the filters.
+ */
 export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
+    // Empty array to hold WHERE clauses
     const whereClauses = [];
 
+    // Add breed filters based on predefined filter categories
     if (filters.filter && filters.filter.toLowerCase() !== "all") {
         let breedList = filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds];
 
@@ -44,16 +72,19 @@ export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
         })
     }
 
+    // Add species, breed, and outcome filters
     if (filters.species) whereClauses.push(eq(aac.animalType, filters.species));
     if (filters.breed)   whereClauses.push(like(aac.breed, `%${filters.breed}%`));
     if (filters.outcome) whereClauses.push(eq(aac.outcomeType, filters.outcome));
 
+    // Add location bounding box filter if provided
     const box = toBoundingBox(filters.location);
     if (box) {
         whereClauses.push(between(aac.locationLat, box.minLat, box.maxLat));
         whereClauses.push(between(aac.locationLong, box.minLng, box.maxLng));
     }
 
+    // Execute count query with constructed WHERE clauses
     const [{ c }] = await db
         .select({ c: sql<number>`count(*)` })
         .from(aac)
@@ -62,9 +93,19 @@ export async function countAAC(filters: Partial<SearchQuery>): Promise<number> {
     return c ?? 0;
 }
 
+/**
+ * Search AAC animals based on search filters.
+ * 
+ * @param {Partial<SearchQuery>} filters The search filters to apply.
+ * @param {number} skip The number of records to skip (for pagination).
+ * @param {number} limit The maximum number of records to return.
+ * @returns {Promise<Animal[]>} The list of animals matching the filters.
+ */
 export async function searchAAC(filters: Partial<SearchQuery>, skip: number, limit: number) {
+    // Empty array to hold WHERE clauses
     const whereClauses = [];
 
+    // Add breed filters based on predefined filter categories
     if (filters.filter && filters.filter.toLowerCase() !== "all") {
         let breedList = filterBreeds[filters.filter.toLowerCase() as keyof typeof filterBreeds];
 
@@ -74,10 +115,12 @@ export async function searchAAC(filters: Partial<SearchQuery>, skip: number, lim
         })
     }
 
+    // Add species, breed, and outcome filters
     if (filters.species) whereClauses.push(eq(aac.animalType, filters.species));
     if (filters.breed)   whereClauses.push(like(aac.breed, `%${filters.breed}%`));
     if (filters.outcome) whereClauses.push(eq(aac.outcomeType, filters.outcome));
 
+    // Add location bounding box filter if provided
     const box = toBoundingBox(filters.location);
     if (box) {
         whereClauses.push(between(aac.locationLat, box.minLat, box.maxLat));
